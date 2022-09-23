@@ -4,7 +4,7 @@ import { Button } from "@mui/material";
 import "./app.css";
 import { useEffect, useState } from "react";
 import { db } from "./firebase_config";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, addDoc } from "firebase/firestore";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
@@ -12,17 +12,31 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 
 function App() {
+  // state for new title and description
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
   // state that will hold posts from our table/collection
   const [posts, setPosts] = useState([]);
   const postsRef = collection(db, "posts");
 
-  // useEffect to render list. when making a request with an api the api will try to return a promise(data that needs to be resolved, either a success or a failure), when making api calls use async await functions
+  // create post, use addDoc to create new documents
+  async function createPost(e) {
+    try {
+      await addDoc(postsRef, { title: newTitle, description: newDescription });
+      console.log("gets this far");
+      e.preventDefault();
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
+
+  // useEffect to render posts list. when making a request with an api the api will try to return a promise(data that needs to be resolved, either a success or a failure), when making api calls use async await functions
   useEffect(() => {
-    const getPosts = async () => {
+    async function getPosts() {
+      const postsRef = collection(db, "posts");
       const data = await getDocs(postsRef);
       setPosts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-    };
-
+    }
     getPosts();
   }, []);
 
@@ -36,20 +50,41 @@ function App() {
         noValidate
         autoComplete="off"
       >
-        <TextField id="outlined-basic" label="title" variant="outlined" />
-        <TextField id="outlined-basic" label="description" variant="outlined" />
-        <Button type="submit" variant="outlined">
-          Submit
+        <TextField
+          id="outlined-basic"
+          label="title"
+          variant="outlined"
+          onChange={(e) => {
+            setNewTitle(e.target.value);
+          }}
+        />
+        <TextField
+          id="outlined-basic"
+          label="description"
+          variant="outlined"
+          onChange={(e) => {
+            setNewDescription(e.target.value);
+          }}
+        />
+        <Button variant="outlined" onClick={createPost}>
+          Create Post
         </Button>
       </Box>
       {posts.map((post) => {
         return (
-          <Card sx={{ maxWidth: 345 }}>
+          <Card
+            sx={{
+              maxWidth: 345,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
             {/* <CardMedia
               component="img"
               height="140"
-              image="/static/images/cards/contemplative-reptile.jpg"
-              alt="green iguana"
+              image=""
+              alt="post picture"
             /> */}
             <CardContent>
               <Typography gutterBottom variant="h5" component="div">
@@ -60,8 +95,8 @@ function App() {
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small">Share</Button>
-              <Button size="small">Learn More</Button>
+              <Button size="small">edit</Button>
+              <Button size="small">delete</Button>
             </CardActions>
           </Card>
         );
