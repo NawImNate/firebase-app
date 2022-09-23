@@ -4,7 +4,7 @@ import { Button } from "@mui/material";
 import "./app.css";
 import { useEffect, useState } from "react";
 import { db } from "./firebase_config";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc } from "firebase/firestore";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
@@ -13,16 +13,22 @@ import Typography from "@mui/material/Typography";
 
 function App() {
   // state for new title and description
-  const [newTitle, setNewTitle] = useState("");
-  const [newDescription, setNewDescription] = useState("");
+  const [postTitle, setPostTitle] = useState("");
+  const [postDescription, setPostDescription] = useState("");
   // state that will hold posts from our table/collection
   const [posts, setPosts] = useState([]);
   const postsRef = collection(db, "posts");
+  // state for new updated/edit title and description
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState(second);
 
-  // create post, use addDoc to create new documents
+  // Create: use addDoc to create new documents
   async function createPost(e) {
     try {
-      await addDoc(postsRef, { title: newTitle, description: newDescription });
+      await addDoc(postsRef, {
+        title: postTitle,
+        description: postDescription,
+      });
       console.log("gets this far");
       e.preventDefault();
     } catch (err) {
@@ -30,7 +36,7 @@ function App() {
     }
   }
 
-  // useEffect to render posts list. when making a request with an api the api will try to return a promise(data that needs to be resolved, either a success or a failure), when making api calls use async await functions
+  // Read: useEffect to render posts list. when making a request with an api the api will try to return a promise(data that needs to be resolved, either a success or a failure), when making api calls use async await functions
   useEffect(() => {
     async function getPosts() {
       const postsRef = collection(db, "posts");
@@ -39,6 +45,21 @@ function App() {
     }
     getPosts();
   }, []);
+
+  // Update a post
+  // async function updatePost(e, title, description) {
+  //   e.preventDefault();
+  //   await updateDoc(postsRef, {
+  //     title: title,
+  //     description: description,
+  //   });
+  // }
+
+  //  Delete a post
+  // const deletePost = async (id) => {
+  //   const userDoc = doc(db, "posts", id);
+  //   await deleteDoc(userDoc);
+  // };
 
   return (
     <div className="App">
@@ -55,7 +76,7 @@ function App() {
           label="title"
           variant="outlined"
           onChange={(e) => {
-            setNewTitle(e.target.value);
+            setPostTitle(e.target.value);
           }}
         />
         <TextField
@@ -63,7 +84,7 @@ function App() {
           label="description"
           variant="outlined"
           onChange={(e) => {
-            setNewDescription(e.target.value);
+            setPostDescription(e.target.value);
           }}
         />
         <Button variant="outlined" onClick={createPost}>
@@ -95,7 +116,9 @@ function App() {
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small">edit</Button>
+              <Button size="small" onClick={() => {}}>
+                edit
+              </Button>
               <Button size="small">delete</Button>
             </CardActions>
           </Card>
