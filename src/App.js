@@ -4,23 +4,27 @@ import { Button } from "@mui/material";
 import "./app.css";
 import { useEffect, useState } from "react";
 import { db } from "./firebase_config";
-import { collection, getDocs, addDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 // import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
+import Modal from "./components/Modal";
 
-function App() {
+function App({ newTitle, newDesc }) {
   // state for new title and description
   const [postTitle, setPostTitle] = useState("");
   const [postDescription, setPostDescription] = useState("");
   // state that will hold posts from our table/collection
   const [posts, setPosts] = useState([]);
   const postsRef = collection(db, "posts");
-  // state for new updated/edit title and description
-  const [newTitle, setNewTitle] = useState("");
-  const [newDescription, setNewDescription] = useState(second);
 
   // Create: use addDoc to create new documents
   async function createPost(e) {
@@ -30,6 +34,7 @@ function App() {
         description: postDescription,
       });
       console.log("gets this far");
+      refreshPosts();
       e.preventDefault();
     } catch (err) {
       console.log(err.message);
@@ -46,20 +51,35 @@ function App() {
     getPosts();
   }, []);
 
+  async function refreshPosts() {
+    const postsRef = collection(db, "posts");
+    const data = await getDocs(postsRef);
+    setPosts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+  }
   // Update a post
   // async function updatePost(e, title, description) {
-  //   e.preventDefault();
-  //   await updateDoc(postsRef, {
-  //     title: title,
-  //     description: description,
-  //   });
+  //   try {
+  //     e.preventDefault();
+  //     await updateDoc(postsRef, {
+  //       title: title,
+  //       description: description,
+  //     });
+  //   } catch (err) {
+  //     console.log(err.message);
+  //   }
   // }
 
   //  Delete a post
-  // const deletePost = async (id) => {
-  //   const userDoc = doc(db, "posts", id);
-  //   await deleteDoc(userDoc);
-  // };
+  const deletePost = async (id) => {
+    const userDoc = doc(db, "posts", id);
+    try {
+      await deleteDoc(userDoc);
+      alert("Post Deleted");
+      refreshPosts();
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
 
   return (
     <div className="App">
@@ -116,10 +136,16 @@ function App() {
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" onClick={() => {}}>
-                edit
+              {/* modal for edit button */}
+              {/* <Modal newTitle={newTitle} newDesc={newDesc} /> */}
+              <Button
+                size="small"
+                onClick={() => {
+                  deletePost(post.id);
+                }}
+              >
+                delete
               </Button>
-              <Button size="small">delete</Button>
             </CardActions>
           </Card>
         );
