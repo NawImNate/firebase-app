@@ -16,7 +16,7 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-// import Modal from "./components/Modal";
+import Modal from "./components/Modal";
 
 function App({ newTitle, newDesc }) {
   // state for new title and description
@@ -25,6 +25,9 @@ function App({ newTitle, newDesc }) {
   // state that will hold posts from our table/collection
   const [posts, setPosts] = useState([]);
   const postsRef = collection(db, "posts");
+  // state for image upload
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
 
   // Create: use addDoc to create new documents
   async function createPost(e) {
@@ -56,6 +59,7 @@ function App({ newTitle, newDesc }) {
     const data = await getDocs(postsRef);
     setPosts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
   }
+
   // Update a post
   // async function updatePost(e, title, description) {
   //   try {
@@ -70,7 +74,7 @@ function App({ newTitle, newDesc }) {
   // }
 
   //  Delete a post
-  const deletePost = async (id) => {
+  async function deletePost(id) {
     const userDoc = doc(db, "posts", id);
     try {
       await deleteDoc(userDoc);
@@ -79,7 +83,14 @@ function App({ newTitle, newDesc }) {
     } catch (err) {
       console.log(err.message);
     }
-  };
+  }
+
+  // preview image side effect
+  useEffect(() => {
+    if (selectedImage) {
+      setImageUrl(URL.createObjectURL(selectedImage));
+    }
+  }, [selectedImage]);
 
   return (
     <div className="App">
@@ -107,6 +118,26 @@ function App({ newTitle, newDesc }) {
             setPostDescription(e.target.value);
           }}
         />
+        {/* input to select image */}
+        <input
+          accept="image/*"
+          type="file"
+          id="select-image"
+          onChange={(e) => setSelectedImage(e.target.files[0])}
+        />
+        {/* image preview */}
+        {imageUrl && selectedImage && (
+          <Box mt={2} textAlign="center">
+            <div>Image Preview:</div>
+            <img src={imageUrl} alt={selectedImage.name} height="100px" />
+          </Box>
+        )}
+        {/* button to upload image */}
+        <label htmlFor="select-image">
+          <Button variant="contained" color="primary">
+            Upload Image
+          </Button>
+        </label>
         <Button variant="outlined" onClick={createPost}>
           Create Post
         </Button>
@@ -137,7 +168,7 @@ function App({ newTitle, newDesc }) {
             </CardContent>
             <CardActions>
               {/* modal for edit button */}
-              {/* <Modal newTitle={newTitle} newDesc={newDesc} /> */}
+              <Modal newTitle={newTitle} newDesc={newDesc} />
               <Button
                 size="small"
                 onClick={() => {
