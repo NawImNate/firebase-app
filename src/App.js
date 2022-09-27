@@ -14,9 +14,9 @@ import {
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
-// import CardMedia from "@mui/material/CardMedia";
+import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import Modal from "./components/Modal";
+// import Modal from "./components/Modal";
 
 function App({ newTitle, newDesc }) {
   // state for new title and description
@@ -121,12 +121,12 @@ function App({ newTitle, newDesc }) {
               justifyContent: "center",
             }}
           >
-            {/* <CardMedia
+            <CardMedia
               component="img"
               height="140"
               image=""
               alt="post picture"
-            /> */}
+            />
             <CardContent>
               <Typography gutterBottom variant="h5" component="div">
                 <h6>{post.title}</h6>
